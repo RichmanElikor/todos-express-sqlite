@@ -49,18 +49,18 @@ jobs:
       - name: Create Dockerrun.aws.json 
         run: | 
           echo '{
-            "AWSEBDockerrunVersion": "1",
+            "AWSEBDockerrunVersion": 1,
             "Image": {
-              "Name": "'$ECR_REGISTRY'/'$ECR_REPOSITORY':'$IMAGE_TAG'",
+              "Name": "richman100/todo-app:latest",
               "Update": "true"
-              },
-              "Ports": [
-                {
-                  "ContainerPort": "3000",
-                  "HostPort": "80"
-                }
-              ]
-            }' > Dockerrun.aws.json
+            },
+            "Ports": [
+              {
+                "ContainerPort": 3000,
+                "HostPort": 80
+              }
+            ]
+          }' > Dockerrun.aws.json
 
       - name: Deploy to Elastic Beanstalk 
         uses: einaregilsson/beanstalk-deploy@v21

@@ -46,8 +46,8 @@ jobs:
             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 
       
-      - name: Create Dockerrun.aws.json 
-        run: | 
+      - name: Create Dockerrun.aws.json
+        run: |
           echo '{
             "AWSEBDockerrunVersion": 1,
             "Image": {
@@ -56,10 +56,14 @@ jobs:
             },
             "Ports": [
               {
-                "ContainerPort": "3000",
+                "ContainerPort": "3000"
               }
             ]
           }' > Dockerrun.aws.json
+
+
+      - name: Validate Dockerrun.aws.json
+        run: cat Dockerrun.aws.json | python3 -m json.tool
 
       - name: Deploy to Elastic Beanstalk 
         uses: einaregilsson/beanstalk-deploy@v21

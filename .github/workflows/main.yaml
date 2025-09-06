@@ -21,7 +21,7 @@ jobs:
 #         npm test
 
   Build_and_Deploy:
-    needs : test # Ensure tests pass before building and deploying
+    needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -31,24 +31,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    #  - name: Login to Amazon ECR 
-     #   id: login-ecr
-      #  uses: aws-actions/amazon-ecr-login@v1
-      # env: 
-       #   ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-       #   ECR_REPOSITORY: todo
-        #  IMAGE_TAG: latest
-        #run: |
-           # docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-            #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
       - name: Build and Push Docker image to Docker Hub
         run: |
           docker build -t richman100/todo-application:latest .
@@ -56,27 +45,29 @@ jobs:
       - name: Create Dockerrun.aws.json
         run: |
           echo '{
-            "AWSEBDockerrunVersion": 1,
+            "AWSEBDockerrunVersion": "1",
             "Image": {
               "Name": "richman100/todo-application:latest",
               "Update": "true"
             },
             "Ports": [
               {
-                "ContainerPort": "3000"
+                "ContainerPort": "3000",
+                "HostPort": "80"
               }
             ]
           }' > Dockerrun.aws.json
-
-
-      #- name: Validate Dockerrun.aws.json
-       # run: cat Dockerrun.aws.json | python3 -m json.tool
-
+      - name: Validate Dockerrun.aws.json
+        run: |
+          cat Dockerrun.aws.json
+          python3 -m json.tool < Dockerrun.aws.json
+      - name: List files for debugging
+        run: ls -la
       - name: Deploy to Elastic Beanstalk 
         uses: einaregilsson/beanstalk-deploy@v21
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID}}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: todo-app
           environment_name: Todo-app-env
           version_label: ${{ github.sha }}

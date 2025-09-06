@@ -56,7 +56,7 @@ jobs:
             },
             "Ports": [
               {
-                "ContainerPort": 3000,
+                "ContainerPort": "3000",
               }
             ]
           }' > Dockerrun.aws.json
